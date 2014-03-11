@@ -13,8 +13,9 @@ void DatasetConfig::writeOutSampleXml( std::string sampleURL )
 	fs << "name" << "PET09";
 	fs << "dir" << "D:\\tracking-dataset\\PETS 2009\\S2_L1_View001\\View_001";
 	fs << "format" << "frame_####.jpg";
-	fs << "FrameWidth" << 640;
-	fs << "FrameHeight" << 480;
+	fs << "setting" << 0;
+	fs << "frameWidth" << 640;
+	fs << "frameHeight" << 480;
 	fs << "sIdx" << 0;
 	fs << "eIdx" << 794;
 	fs << "offset" << 1;
@@ -42,18 +43,18 @@ bool DatasetConfig::loadSetting( std::string fileName )
 	m_dir = fs["dir"];
 	m_format = fs["format"];
 	//
+	m_setting = (int)fs["setting"];
+	//
+	m_fWidth = (int)fs["frameWidth"];
+	m_fHeight = (int)fs["frameHeight"];
+	//
 	m_sIdx = (int)fs["sIdx"];
 	m_eIdx = (int)fs["eIdx"];
 	m_offset = (int)fs["offset"];
 	//
-	m_fWidth = (int)fs["FrameWidth"];
-	m_fHeight = (int)fs["FrameHeight"];
-	//
 	m_fbGTUrl = fs["fbGTUrl"];
 	m_tbGTUrl = fs["tbGTUrl"];
 	fs["detResUrls"] >> m_detResUrls;
-	//
-	m_setting = (int)fs["setting"];
 	//
 	fs.release();
 	m_isLoaded = true;
