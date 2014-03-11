@@ -1,19 +1,4 @@
-#include "../io/player.h"
-#include "../dataset/datasetconfig.h"
-
-#include <iostream>
-
-using namespace std;
-
-void dataset2ImgSeq(const DatasetConfig &dataset, ImgSeqConfig &conf)
-{
-	conf.dir = dataset.m_dir;
-	conf.sIdx = dataset.m_sIdx;
-	conf.eIdx = dataset.m_eIdx;
-	conf.offset = dataset.m_offset;
-	conf.fileName = dataset.m_format;
-	conf.frames = (conf.eIdx - conf.sIdx + 1) / conf.offset;
-}
+#include "testUtils.h"
 
 int testImgSeqPlayer(std::string datasetFile, std::string recordFile = "", int fps = 20)
 {
