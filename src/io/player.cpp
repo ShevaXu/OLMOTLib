@@ -10,7 +10,7 @@ int CVPlayer::autoPlay()
 {
 	namedWindow("CVPlayer");
 	int nFrames = m_reader->getFrames();
-	createTrackbar("FramePlayed", "CVPlayer", &m_trackbarPos, nFrames);
+	createTrackbar("Frame#", "CVPlayer", &m_trackbarPos, nFrames);
 
 	//
 	int time2wait = 1000 / m_fps;
