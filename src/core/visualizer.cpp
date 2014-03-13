@@ -77,7 +77,7 @@ cv::Mat ResultCaster::castOnFrame( const cv::Mat &img, int fIdx )
 		buffer << "Miss: " << m_info.eval.missDets;
 		string tid = buffer.str();				
 		putText(copy, tid, Point(15, 55), 
-			FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 0), 2.0);
+			FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 0), 2);
 	}
 
 	return copy;
