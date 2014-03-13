@@ -1,5 +1,7 @@
 #include "testUtils.h"
+
 #include "../core/experimenter.h"
+#include "../core/basicrepr.h"
 
 int testCoreTemplate()
 {
