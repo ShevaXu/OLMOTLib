@@ -21,31 +21,36 @@ public:
 	// override
 	cv::Mat getFrameToShow(const cv::Mat &frame, int fIdx)
 	{
+		DetGTInfo info;
+		info.showDetEval = false;
 		if (m_withGT && m_fCount < m_gt->m_nFrames)
 		{
-			m_caster->setVOutput(m_gt->m_result[m_fCount]);	// fCount is increased after this
+			info.outputInfo = m_gt->m_result[m_fCount];
 			//
 			if (m_genDets)
 			{
 				// the params are fixed for visualization
 				MOTDetections dets = m_eval->generateFrame(m_gt->m_result[m_fCount], 0.8f, 0.8f, frame.size(), 0.1f);
-				m_caster->setVDet(dets);
+				info.dets = dets;
 				// if generate, must show evaluation result
 				DetEvalResult res;
 				m_eval->evaluateFrame(dets, m_gt->m_result[m_fCount], res);
-				m_caster->setDetEval(res);
+				info.eval = res;
+				info.showDetEval = true;
 			}
 		}
 		if (m_withDR && m_fCount < m_dr->m_nFrames)
 		{
-			m_caster->setVDet(m_dr->m_result[m_fCount]);	// fCount is increased after this
+			info.dets = m_dr->m_result[m_fCount];
 			if (m_showEval)
 			{
 				DetEvalResult res;
 				m_eval->evaluateFrame(m_dr->m_result[m_fCount], m_gt->m_result[m_fCount], res);
-				m_caster->setDetEval(res);
+				info.eval = res;
+				info.showDetEval = true;
 			}
 		}
+		m_caster->setVisualInfo(info);
 		//
 		return m_caster->castOnFrame(frame, fIdx);
 	}

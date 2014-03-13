@@ -3,6 +3,7 @@
 
 #include "defs.h"
 
+template <typename T>
 class MOTVisualizer
 {
 public:
@@ -10,9 +11,23 @@ public:
 
 	virtual cv::Mat castOnFrame(const cv::Mat &img, int fIdx) = 0;
 
+	virtual void setVisualInfo(const T &info) = 0;
+
+protected:
+	T m_info;
 };
 
-class ResultCaster: MOTVisualizer
+//////////////////////////////////////////////////////////////////////////
+
+struct DetGTInfo
+{
+	MOTOutput outputInfo;
+	MOTDetections dets;
+	DetEvalResult eval;
+	bool showDetEval;
+};
+
+class ResultCaster: public MOTVisualizer<DetGTInfo>
 {
 public:
 	ResultCaster(): m_showOutput(false), m_showDetections(false), m_showDetEval(false) 
@@ -22,33 +37,18 @@ public:
 		m_detColor = cv::Scalar(0, 255, 0);
 	};
 
-	cv::Mat castOnFrame(const cv::Mat &img, int fIdx);	
+	cv::Mat castOnFrame(const cv::Mat &img, int fIdx);
 
-	void setVOutput(const MOTOutput &outputInfo)
+	virtual void setVisualInfo(const DetGTInfo &info)
 	{
-		m_outputInfo = outputInfo;
-		m_showOutput = true;
-	}
-
-	void setVDet(const MOTDetections &dets)
-	{
-		m_dets = dets;
-		m_showDetections = true;
-	}
-
-	void setDetEval(DetEvalResult result)
-	{
-		m_showDetEval = true;
-		m_result = result;
+		m_info = info;
 	}
 
 private:
 	bool m_showOutput, m_showDetections;
 	bool m_showDetEval;
 	cv::Scalar m_outputColor, m_detColor;
-	MOTOutput m_outputInfo;
-	MOTDetections m_dets;
-	DetEvalResult m_result;
+	DetGTInfo m_info;
 };
 
 #endif	// visualizer.h
