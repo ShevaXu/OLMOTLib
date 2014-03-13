@@ -11,14 +11,6 @@ typedef cv::Rect BoundingBox;
 //////////////////////////////////////////////////////////////////////////
 // simple combinator
 
-struct FrameClips
-{
-	cv::Mat bgr;
-	cv::Mat gray;
-	cv::Mat xGrad;
-	cv::Mat yGrad;
-};
-
 struct IndexSet
 {
 	int sIdx, eIdx, offset;
@@ -178,6 +170,7 @@ public:
 	std::vector<MOTDetections> m_result;
 };
 
+//////////////////////////////////////////////////////////////////////////
 // basic representation
 class Representation 
 {
@@ -219,23 +212,5 @@ struct DetectionWrapper
 
 typedef cv::Ptr<DetectionWrapper> DetectionWrapperPtr;
 typedef std::vector<DetectionWrapperPtr> FinalDetections;
-
-//////////////////////////////////////////////////////////////////////////
-// visual info
-// this might change frequently
-struct VisualInfoPF
-{
-	MOTDetections m_rawDets;
-	FinalDetections m_detInfos;
-	std::vector<ObjFrameInfo> m_targetInfos,
-		m_candidateInfos;
-	//std::vector<MOTVelocity> m_velInfos;
-	//MOTGeoInfo m_geo;
-	/*std::vector<cv::Point2f> m_targetProjs,
-		m_candProjs,
-		m_detProjs;*/
-	// for debug
-	//std::vector<BoundingBox> m_cBBs, m_rBBs;
-};
 
 #endif // defs.h
