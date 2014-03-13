@@ -370,6 +370,8 @@ int XMLFileWrapper::writeOut( const TrackBasedResult &result, std::string outFil
 	// XML object save			
 	if (xml->Save(outFile.c_str()) == 1)
 		cout << "Saved - " << outFile << endl;
+	else
+		cout << "Fail to save - " << outFile << endl;
 
 	// XML object bye bye
 	delete xml;
@@ -435,6 +437,8 @@ int XMLFileWrapper::writeOut( const FrameBasedResult &result, std::string outFil
 	// XML object save			
 	if (xml->Save(outFile.c_str()) == 1)
 		cout << "Saved - " << outFile << endl;
+	else
+		cout << "Fail to save - " << outFile << endl;
 
 	// XML object bye bye
 	delete xml;
@@ -555,6 +559,8 @@ int XMLFileWrapper::writeOut( const DetectionResult &dr, std::string outFile, in
 	// XML object save			
 	if (xml->Save(outFile.c_str()) == 1)
 		cout << "Saved - " << outFile << endl;
+	else
+		cout << "Fail to save - " << outFile << endl;
 
 	// XML object bye bye
 	delete xml;
@@ -589,63 +595,68 @@ int XMLFileWrapper::convert( TrackBasedResult &tb, FrameBasedResult &fb )
 	if (tb.m_result.empty())	// fb -> tb
 	{
 		// stats
-		tb.m_idx.sIdx = fb.m_idx.sIdx;
+		/*tb.m_idx.sIdx = fb.m_idx.sIdx;
 		tb.m_idx.eIdx = fb.m_idx.eIdx;
-		tb.m_idx.offset = fb.m_idx.offset;
+		tb.m_idx.offset = fb.m_idx.offset*/;
+		tb.m_idx = fb.m_idx;
 		tb.m_nFrames = fb.m_nFrames;
-		tb.m_nTracks = fb.m_nTracks;
+		tb.m_nTracks = fb.m_nTracks;	// suppose the track# is right
 		// push in empty trajectories
-		//MOTTrajectory trac;
-		//for (int i = 0; i < mGT->totalTracs; i++)
-		//{
-		//	trac.objId = i + 1;	// re-index the objects from 1 to totalObjs
-		//	mGT->trajectories.push_back(trac);
-		//}
-		//// iterates over all frames
-		//assert(cvmlGT->nFrames == cvmlGT->frameList.size());
-		//for (int i = 0; i < cvmlGT->nFrames; i++)
-		//{
-		//	MOTTracFrame tempF;
-		//	tempF.idx = i + cvmlGT->sIdx;
+		MOTTrajectory trac;
+		trac.idx.offset = tb.m_idx.offset;
+		for (int i = 0; i < tb.m_nTracks; i++)
+		{
+			trac.id = i + 1;	// re-index the objects from 1 to nTracks			
+			tb.m_result.push_back(trac);
+		}
+		// iterates over all frames
+		int idx = fb.m_idx.sIdx,
+			offset = fb.m_idx.offset;
+		for (int i = 0; i < fb.m_nFrames; i++)
+		{
+			ObjTrackInfo tInfo;
+			tInfo.fIdx = idx;
 
-		//	for (int j = 0; j < (int)cvmlGT->frameList[i].objList.size(); j++)
-		//	{
-		//		tempF.bb = cvmlGT->frameList[i].objList[j].bb;
-		//		int obj_id = cvmlGT->frameList[i].objList[j].id;
-		//		// trajectories is 0-based
-		//		mGT->trajectories[obj_id - 1].tracFrames.push_back(tempF);	
-		//	}
-		//}
-		//// iterates over all trajectories to fill in those stats
-		//int sIdx, eIdx, fNum;
-		//for (int i = 0; i < mGT->totalTracs; i++)
-		//{
-		//	fNum = mGT->trajectories[i].tracFrames.size();
-		//	if (fNum > 0)
-		//	{
-		//		sIdx = mGT->trajectories[i].tracFrames[0].idx;
-		//		eIdx = mGT->trajectories[i].tracFrames[fNum - 1].idx;
-		//	}
-		//	else
-		//	{
-		//		sIdx = 0;
-		//		eIdx = 0;
-		//		fNum = 1;
-		//	}
-		//	mGT->trajectories[i].sIdx = sIdx;
-		//	mGT->trajectories[i].eIdx = eIdx;
-		//	mGT->trajectories[i].offset = max((eIdx - sIdx + 1) / fNum, 1);
-		//	mGT->trajectories[i].missingF = eIdx - sIdx + 1 - fNum;
-		//}		
+			MOTOutput &fInfo = fb.m_result[i];
+			for (int j = 0; j < (int)fInfo.size(); j++)
+			{
+				tInfo.info = fInfo[j].info;
+				// trajectories is 0-based
+				// suppose the ID is continuous and 1-based indexed, otherwise needs a ID map
+				int id = fInfo[j].id;
+				tb.m_result[id - 1].trac.push_back(tInfo);
+			}
+			idx += offset;
+		}
+		// iterates over all trajectories to fill in those stats
+		int sIdx, eIdx, fNum;
+		for (int i = 0; i < tb.m_nTracks; i++)
+		{
+			fNum = tb.m_result[i].trac.size();
+			if (fNum > 0)
+			{
+				sIdx = tb.m_result[i].trac[0].fIdx;
+				eIdx = tb.m_result[i].trac[fNum - 1].fIdx;
+			}
+			else
+			{
+				sIdx = 0;
+				eIdx = 0;
+				fNum = 0;
+			}
+			tb.m_result[i].idx.sIdx = sIdx;
+			tb.m_result[i].idx.eIdx = eIdx;
+		}		
 		return 0;
 	}
 	//////////////////////////////////////////////////////////////////////////
 	else	// tb -> fb
 	{
 		// stats
-		fb.m_idx.sIdx = tb.m_idx.sIdx;
+		/*fb.m_idx.sIdx = tb.m_idx.sIdx;
 		fb.m_idx.eIdx = tb.m_idx.eIdx;
-		fb.m_idx.offset = tb.m_idx.offset;
+		fb.m_idx.offset = tb.m_idx.offset;*/
+		fb.m_idx = tb.m_idx;
 		fb.m_nFrames = tb.m_nFrames;
 		fb.m_nTracks = tb.m_nTracks;
 		// push all the empty frames
