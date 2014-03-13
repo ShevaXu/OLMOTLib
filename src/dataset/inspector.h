@@ -4,22 +4,18 @@
 #include "../io/player.h"
 #include "../core/visualizer.h"
 
-//#include "deteval.h"
-//#include "detgenerator.h"
+#include "detEvaluator.h"
 
 #include <iostream>
 
 class MOTInspector: public CVPlayer
 {
 public:
-	MOTInspector(bool showDetEval, bool showGenDets = true): m_showEval(showDetEval), m_showGenDets(showGenDets),
+	MOTInspector(): m_showEval(false), m_genDets(false),
 		m_withGT(false), m_withDR(false), CVPlayer(false) 
 	{
 		m_caster = new ResultCaster;
-		/*if (showDetEval)
-		{
-			m_eval = new DetectionEvaluator();
-		}*/
+		m_eval = new DetectionEvaluator;
 	};
 
 	// override
@@ -28,34 +24,29 @@ public:
 		if (m_withGT && m_fCount < m_gt->m_nFrames)
 		{
 			m_caster->setVOutput(m_gt->m_result[m_fCount]);	// fCount is increased after this
+			//
+			if (m_genDets)
+			{
+				// the params are fixed for visualization
+				MOTDetections dets = m_eval->generateFrame(m_gt->m_result[m_fCount], 0.8f, 0.8f, frame.size(), 0.1f);
+				m_caster->setVDet(dets);
+				// if generate, must show evaluation result
+				DetEvalResult res;
+				m_eval->evaluateFrame(dets, m_gt->m_result[m_fCount], res);
+				m_caster->setDetEval(res);
+			}
 		}
 		if (m_withDR && m_fCount < m_dr->m_nFrames)
 		{
 			m_caster->setVDet(m_dr->m_result[m_fCount]);	// fCount is increased after this
-		}
-		/*if (m_showEval && m_withGT && m_fCount < m_gt->m_nFrames && m_withDR && m_fCount < m_dr->m_nFrames)
-		{
-			DetEvalResult res;
-			m_eval->evaluateFrame(m_dr->m_result[m_fCount], m_gt->m_result[m_fCount], res);
-			std::cout << "Good dets: " << res.m_gtDets << " false alarms: " << res.m_falseAlarms <<
-				" missing: " << res.m_missDets << std::endl;
-		}
-		if (m_withGT && m_fCount < m_gt->m_nFrames && !m_withDR && m_showGenDets)
-		{
-			if (m_gen.empty())
-			{
-				m_gen = new DetectionGenerator(m_gt, frame.size());
-			}
-			MOTDetections dets = m_gen->generateFrame(m_gt->m_result[m_fCount], 0.7f, 0.7f, 0.0f);
-			m_caster->setVDet(dets);
 			if (m_showEval)
 			{
 				DetEvalResult res;
-				m_eval->evaluateFrame(dets, m_gt->m_result[m_fCount], res);
-				std::cout << "Good dets: " << res.m_gtDets << " false alarms: " << res.m_falseAlarms <<
-					" missing: " << res.m_missDets << std::endl;
+				m_eval->evaluateFrame(m_dr->m_result[m_fCount], m_gt->m_result[m_fCount], res);
+				m_caster->setDetEval(res);
 			}
-		}*/
+		}
+		//
 		return m_caster->castOnFrame(frame, fIdx);
 	}
 
@@ -69,16 +60,25 @@ public:
 	{
 		m_dr = dr;
 		m_withDR = true;
+		m_genDets = false;
+	}
+
+	void showDetEval()
+	{
+		if (!m_withGT) return;
+
+		if (!m_withDR) m_genDets = true;
+		
+		m_showEval = true;		
 	}
 
 private:
-	bool m_showEval, m_showGenDets;
+	bool m_showEval, m_genDets;
 	bool m_withGT, m_withDR;
 	cv::Ptr<ResultCaster> m_caster;
 	cv::Ptr<FrameBasedGT> m_gt;	// only frame based
 	cv::Ptr<DetectionResult> m_dr;
-	/*cv::Ptr<DetectionEvaluator> m_eval;
-	cv::Ptr<DetectionGenerator> m_gen;*/
+	cv::Ptr<DetectionEvaluator> m_eval;
 };
 
 #endif	// inspector.h

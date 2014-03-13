@@ -65,9 +65,23 @@ cv::Mat ResultCaster::castOnFrame( const cv::Mat &img, int fIdx )
 				FONT_HERSHEY_SIMPLEX, 1.0, m_outputColor, 2);
 		}
 	}
+
+	if (m_showDetEval)
+	{
+		stringstream buffer;
+		buffer << "Good: " << m_result.goodDets << ' ';
+		buffer << "FA: " << m_result.falseAlarms << ' ';
+		buffer << "Miss: " << m_result.missDets;
+		string tid = buffer.str();				
+		putText(copy, tid, Point(15, 55), 
+			FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 0), 2.0);
+	}
+
 	// reset
 	m_showDetections = false;
 	m_showOutput = false;
+	m_showDetEval =false;
+
 	return copy;
 }
 

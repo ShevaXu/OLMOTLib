@@ -102,6 +102,15 @@ struct Detection
 
 typedef std::vector<Detection> MOTDetections;
 
+struct DetEvalResult
+{
+	DetEvalResult(): falseAlarms(0), missDets(0), goodDets(0) {}
+
+	int falseAlarms,
+		missDets,
+		goodDets;
+};
+
 //////////////////////////////////////////////////////////////////////////
 // class with functions
 // "m_" prefix for attributes
