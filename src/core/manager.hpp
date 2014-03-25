@@ -66,6 +66,10 @@ public:
 		if (-1 == inferStates())
 			return -1;
 
+		// final update for models, and others
+		if (-1 == update())
+			return -1;
+
 		// end timing
 		int64 eTime = cv::getTickCount();
 
@@ -88,6 +92,7 @@ protected:
 	virtual int prepare() = 0;
 	virtual int performDA() = 0;	
 	virtual int inferStates() = 0;	
+	virtual int update() = 0;
 
 protected:
 	bool m_verbose;
