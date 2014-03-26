@@ -7,7 +7,7 @@ template <typename TInput, typename TOutput>	// for input frame info and optiona
 class FrameTracker
 {
 public:
-	FrameTracker(bool verbose = true): m_verbose(verbose) {};
+	FrameTracker(float windowFactor = 1.5f, bool verbose = true): m_windowFactor(windowFactor), m_verbose(verbose) {};
 
 	virtual int init(const TInput &frame, cv::Rect bb) = 0;
 
@@ -17,8 +17,13 @@ public:
 
 	virtual TOutput getInfo() = 0;
 
+	cv::Rect getSearchWindow() { return m_window; }
+
 protected:
+	float m_windowFactor;	// -1 for whole image
 	bool m_verbose;
+	// data
+	cv::Rect m_window;
 };
 
 #endif	// frametracker.h

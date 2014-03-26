@@ -5,17 +5,25 @@
 #include "visualizer.h"
 #include "frametracker.h"
 
+struct SOTInfo
+{
+	BoundingBox window, bb;
+};
+
+//////////////////////////////////////////////////////////////////////////
+
 template <typename TInput, typename TOutput>
-class SOTManager: public TrackingManager<cv::Mat, int, BoundingBox>
+class SOTManager: public TrackingManager<cv::Mat, int, SOTInfo>
 {
 public:
 	SOTManager(cv::Ptr<FrameTracker<TInput, TOutput>> tracker, BoundingBox bb, bool verbose = true): 
 	  m_initBB(bb), m_tracker(tracker), TrackingManager(verbose) {};
 
 	  // required
-	  virtual int getVisualization(BoundingBox &vInfo)
+	  virtual int getVisualization(SOTInfo &vInfo)
 	  {
-		  vInfo = m_currentBB;
+		  vInfo.bb = m_currentBB;
+		  vInfo.window = m_tracker->getSearchWindow();
 		  return 1;
 	  }
 
@@ -61,7 +69,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 
-class SOTVisualizer: public MOTVisualizer<BoundingBox>
+class SOTVisualizer: public MOTVisualizer<SOTInfo>
 {
 public:
 	//SOTVisualizer(): MOTVisualizer<BoundingBox>() {};
@@ -69,13 +77,14 @@ public:
 	cv::Mat castOnFrame(const cv::Mat &img, int fIdx)
 	{
 		cv::Mat copy = img.clone();
-		rectangle(copy, m_info, cv::Scalar(0, 0, 255), 2);
+		rectangle(copy, m_info.bb, cv::Scalar(0, 0, 255), 2);
+		rectangle(copy, m_info.window, cv::Scalar(255, 0, 0), 2);
 		return copy;
 	}
 
-	void setVisualInfo(const BoundingBox &bb)
+	void setVisualInfo(const SOTInfo &info)
 	{
-		m_info = bb;
+		m_info = info;
 	}
 };
 
