@@ -16,13 +16,6 @@ struct IndexSet
 	int sIdx, eIdx, offset;
 };
 
-// for 3D
-struct MOTGeoInfo
-{
-	float m_horizon;
-	cv::Point m_vp;
-	float m_camHeight;
-};
 
 //////////////////////////////////////////////////////////////////////////
 // more complex combinator

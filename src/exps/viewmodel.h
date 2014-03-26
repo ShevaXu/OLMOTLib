@@ -11,6 +11,12 @@ struct DetectionDataPoint
 	float v, h;
 };
 
+struct ViewModelInfo
+{
+	int horizon;
+	float camHeight;
+};
+
 // setSigmas(float prior, float estimation, float vps, float propa)
 // setSigmas(0.1f, 0.5f, 0.1f, 0.1f);	// second best
 // setSigmas(0.5f, 0.5f, 0.1f, 0.5f);
@@ -69,13 +75,11 @@ public:
 
 	//////////////////////////////////////////////////////////////////////////
 	// getter
-	MOTGeoInfo getGeo()
+	ViewModelInfo getGeo()
 	{
-		MOTGeoInfo info;
-		info.m_horizon = m_horizon * m_sceneSize.height;
-		info.m_camHeight = m_camHeight;
-		info.m_vp.x = m_vp.x;
-		info.m_vp.y = (int)(m_horizon * m_sceneSize.height);
+		ViewModelInfo info;
+		info.horizon = (int)(m_horizon * m_sceneSize.height);
+		info.camHeight = m_camHeight;
 		return info;
 	}
 
