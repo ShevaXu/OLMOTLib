@@ -28,12 +28,14 @@ public:
 	*/
 	/************************************************************************/
 
-	int process(const cv::Mat &frame)
+	//int process(const cv::Mat &frame)
+	int process(const TInput &frame)
 	{
 		return process(frame, m_fIdx + 1);
 	}
 
-	int process(const cv::Mat &frame, int fIdx)
+	//int process(const cv::Mat &frame, int fIdx)
+	int process(const TInput &frame, int fIdx)
 	{
 		if (m_verbose)
 		{
@@ -41,6 +43,9 @@ public:
 				<< "******* Process frame # " << fIdx << " *******\n"
 				<< "...\n";
 		}
+
+		// keep the input
+		m_currentInput = frame;
 
 		// begin timing
 		int64 bTime = cv::getTickCount();
@@ -78,13 +83,18 @@ public:
 			std::cout << "...\n"
 				<< "******* Successfully process frame #" << fIdx << " in " << (eTime - bTime) / m_freq << " s! *******\n";
 		}
+
+		// save to previous input
+		m_prevInput = frame;
+
 		return 1;
 	}
 
-	// O methods
-	virtual int getCurrentOutput(MOTOutput &output) = 0;
-	virtual int getTrajectory(int id, MOTTrajectory &trajectory) = 0;
-	virtual int getResult(TrackBasedResult &result) = 0;
+	// interfaces, not required
+	virtual int getCurrentOutput(MOTOutput &output) { return 1; };
+	virtual int getTrajectory(int id, MOTTrajectory &trajectory) { return 1; };
+	virtual int getResult(TrackBasedResult &result) { return 1; };
+	// required
 	virtual int getVisualization(TInfo &vInfo) = 0;
 	
 protected:
