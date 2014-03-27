@@ -3,6 +3,21 @@
 
 #include "defs.h"
 
+//////////////////////////////////////////////////////////////////////////
+// custom OpenCV histogram computation
+class CommonHistograms
+{
+public:
+	//static const int MOT_HIST_HS = 0;
+	static int getBGRConcatHist(const cv::Mat &bgr, cv::Mat &hist, int bins, bool normalized = true);
+
+	// 2 dims histogram on HSV space, but use only hue and saturation
+	static int getHS2DHist(const cv::Mat &hsv, cv::Mat &hist, int hBins, int sBins, bool normalized = true);
+
+};
+
+//////////////////////////////////////////////////////////////////////////
+
 class ColorHistRepr: public Representation
 {
 public:
@@ -41,6 +56,7 @@ public:
 	static double scaleAffinity(const cv::Rect &r1, const cv::Rect &r2);
 
 };
+
 
 #endif	// basicrepr.h
 
