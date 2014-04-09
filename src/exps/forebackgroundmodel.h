@@ -2,6 +2,7 @@
 #define _OLMOT_FORE_BACKGROUND_MODEL_H
 
 #include <opencv2/core/core.hpp>
+#include <opencv2/video/background_segm.hpp>
 
 //////////////////////////////////////////////////////////////////////////
 // pixel-wise independent segmentation
@@ -45,6 +46,26 @@ protected:
 	// data
 	cv::Mat m_fgHist, m_bgHist;
 	
+};
+
+//////////////////////////////////////////////////////////////////////////
+// basic default OpenCV BackgroundSubtractor
+class DefaultBgSubtractor
+{
+public:
+	// modelSelection: <1 for MOG, 1 for MOG, > 1 for GMG
+	DefaultBgSubtractor(int modelSelection);
+
+	void init(cv::InputArray frame);
+
+	void apply(cv::InputArray frame, cv::OutputArray fgMask);
+
+	// contours could be vector<vector<Point>>
+	void getContours(cv::InputArray fgMask, cv::OutputArrayOfArrays contours);
+
+protected:
+	cv::Ptr<cv::BackgroundSubtractor> m_subtractor;
+
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -3,6 +3,8 @@
 #include "../core/basicrepr.h"
 #include "../utils.hpp"
 
+#include <opencv2/imgproc/imgproc.hpp>
+
 using namespace cv;
 
 void PixelSegmentation::computeFGBG(const cv::Mat &hsv, cv::Rect bb)
@@ -45,4 +47,40 @@ int PixelSegmentation::segment(const cv::Mat &hsv, cv::Rect bb, cv::Mat &seg)
 	}
 
 	return 1;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+DefaultBgSubtractor::DefaultBgSubtractor( int modelSelection )
+{
+	//if (modelSelection < 1) m_subtractor = createBackgroundSubtractorMOG();	// for OpenCV 3.0
+
+	// use default params
+	if (modelSelection < 1) m_subtractor = new BackgroundSubtractorMOG();			
+	if (modelSelection == 1) m_subtractor = new BackgroundSubtractorMOG2();
+	// set initializationFrames to 10 for quick initialization, only possible for OpenCV 3.0, current default 120
+	if (modelSelection > 1) m_subtractor = new BackgroundSubtractorGMG();
+}
+
+void DefaultBgSubtractor::init( cv::InputArray frame )
+{
+	Mat dummy;	// the foreground mask during init is useless
+	m_subtractor->operator ()(frame, dummy);
+	//m_subtractor->apply(frame, dummy);	// for OpenCV 3.0
+}
+
+void DefaultBgSubtractor::apply( cv::InputArray frame, cv::OutputArray fgMask )
+{
+	m_subtractor->operator ()(frame, fgMask);
+	//m_subtractor->apply(frame, fgMask);	// for OpenCV 3.0
+}
+
+void DefaultBgSubtractor::getContours( cv::InputArray fgMask, cv::OutputArrayOfArrays contours )
+{
+	Mat fg = fgMask.getMat().clone();
+
+	// TODO: further params setting
+	erode(fg, fg, Mat());
+	dilate(fg, fg, Mat());
+	findContours(fg, contours, CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
 }
