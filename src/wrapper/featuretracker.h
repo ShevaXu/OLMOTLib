@@ -29,6 +29,7 @@ protected:
 protected:
 	// data
 	cv::Mat m_trans;
+	cv::Mat m_patch;
 	std::vector<cv::KeyPoint> m_fromKPs, m_toKPs;
 	cv::Mat m_fromDes, m_toDes;
 	// tools

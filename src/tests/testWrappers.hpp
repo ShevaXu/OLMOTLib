@@ -4,6 +4,7 @@
 
 #include "../wrapper/pixeltrackwrapper.h"
 #include "../wrapper/meanshifttracker.h"
+#include "../wrapper/featuretracker.h"
 
 using namespace std;
 using namespace cv;
@@ -72,3 +73,37 @@ int testMeanShift(std::string fileName, BoundingBox bb)
 
 	return 1;
 }
+
+int testFeatureTrack(std::string fileName, BoundingBox bb)
+{
+	cout << "Test for features2d tracking!\n";
+
+	MOTExperimenter<int, SOTInfo> me;
+
+	std::string baseDir = "D:\\tracking-dataset\\configs\\";	
+
+	DatasetConfig dataset(baseDir + fileName);
+
+	ImgSeqConfig conf;
+	dataset2ImgSeq(dataset, conf);
+
+	cv::Ptr<ImgSeqReader> reader = new ImgSeqReader(conf);
+	me.setReader(reader);
+
+	//////////////////////////////////////////////////////////////////////////
+
+	int mode = 0;
+	cv::Ptr<FeatureTracker> tracker = new FeatureTracker();
+
+	cv::Ptr<TrackingManager<cv::Mat, int, SOTInfo>> manager = new SOTManager<cv::Mat, cv::Mat>(tracker, bb, true);
+
+	cv::Ptr<MOTVisualizer<SOTInfo>> vis = new SOTVisualizer();
+
+	me.setTrackingManager(manager);
+	me.setVisualizer(vis);
+
+	me.autoPlay();
+
+	return 1;
+}
+

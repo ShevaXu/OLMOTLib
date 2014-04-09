@@ -4,7 +4,11 @@
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/nonfree/features2d.hpp>
 
+#include <opencv2/highgui/highgui.hpp>
+#include <iostream>
+
 using namespace cv;
+using namespace std;
 
 FeatureTracker::FeatureTracker( float windowFactor /*= 1.5f*/, bool verbose /*= true*/ ): FrameTracker(windowFactor, verbose) 
 {
@@ -20,9 +24,12 @@ FeatureTracker::FeatureTracker( float windowFactor /*= 1.5f*/, bool verbose /*= 
 int FeatureTracker::init( const cv::Mat &frame, cv::Rect bb )
 {
 	//
-	Mat roi(frame, bb);
+	/*Mat roi(frame, bb);
 	m_feat2D->detect(roi, m_fromKPs);
-	m_feat2D->compute(roi, m_fromKPs, m_fromDes);
+	m_feat2D->compute(roi, m_fromKPs, m_fromDes);*/
+	m_patch = frame(bb).clone();
+	m_feat2D->detect(m_patch, m_fromKPs);
+	m_feat2D->compute(m_patch, m_fromKPs, m_fromDes);
 
 	return 1;
 }
@@ -30,9 +37,12 @@ int FeatureTracker::init( const cv::Mat &frame, cv::Rect bb )
 int FeatureTracker::update( const cv::Mat &frame, cv::Rect bb )
 {
 	//
-	Mat roi(frame, bb);
+	/*Mat roi(frame, bb);
 	m_feat2D->detect(roi, m_fromKPs);
-	m_feat2D->compute(roi, m_fromKPs, m_fromDes);
+	m_feat2D->compute(roi, m_fromKPs, m_fromDes);*/
+	m_patch = frame(bb).clone();
+	m_feat2D->detect(m_patch, m_fromKPs);
+	m_feat2D->compute(m_patch, m_fromKPs, m_fromDes);
 
 	return 1;
 }
@@ -54,9 +64,20 @@ cv::Rect FeatureTracker::track( const cv::Mat &frame, cv::Rect prevBB )
 	// matching
 	std::vector<DMatch> matches, good_matches;
 	m_matcher->match( m_fromDes, m_toDes, matches );
-	good_matches = filterGoodMatches(matches);
-
+	//good_matches = filterGoodMatches(matches);
+	good_matches = matches;
 	int nGM = good_matches.size();
+
+	if (m_verbose)
+	{
+		Mat img_matches;
+		drawMatches( m_patch, m_fromKPs, roi, m_toKPs,
+			good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
+			vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );	
+		imshow("Matches", img_matches);
+		cout << matches.size() << " matches filtered to " << nGM << endl;
+	}
+	
 	if (nGM >= 3)
 	{
 		vector<Point2f> fromP, toP;
@@ -67,16 +88,22 @@ cv::Rect FeatureTracker::track( const cv::Mat &frame, cv::Rect prevBB )
 			toP.push_back( m_toKPs[ good_matches[i].trainIdx ].pt );
 		}
 		//
-		m_trans = estimateRigidTransform( fromP, toP, true );
+		m_trans = estimateRigidTransform( fromP, toP, false );
 		//
 		if (m_trans.data)
 		{
+			if (m_verbose) cout << m_trans << endl;
 			// use translation only
 			resBB = Rect(Point(0, 0), prevBB.size())
 				+ Point((int)m_trans.at<double>(0,2), (int)m_trans.at<double>(1,2))
 				+ anchor;
 			// or use full transform
 		}		
+		else if (m_verbose)
+		{
+			cout << "Fail to estimate rigid transform!\n";
+		}
+		
 	}
 
 	return resBB;
