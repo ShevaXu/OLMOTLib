@@ -8,7 +8,14 @@
 class CommonHistograms
 {
 public:
-	//static const int MOT_HIST_HS = 0;
+	// all default normalizations are NORM_L1 as distribution directly
+
+	// for single channel histogram
+	// also serves as building block for other histograms
+	// maxV set to 256 for BGR and saturation ...
+	static int getSingleChannelHist(const cv::Mat &img, cv::Mat &hist, int channel, int bins, int maxV = 256, bool normalized = false);
+
+	// 1 dim histogram which concatenate each single BGR channel
 	static int getBGRConcatHist(const cv::Mat &bgr, cv::Mat &hist, int bins, bool normalized = true);
 
 	// 2 dims histogram on HSV space, but use only hue and saturation
@@ -56,7 +63,6 @@ public:
 	static double scaleAffinity(const cv::Rect &r1, const cv::Rect &r2);
 
 };
-
 
 #endif	// basicrepr.h
 

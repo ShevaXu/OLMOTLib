@@ -16,26 +16,6 @@ ColorHistRepr::ColorHistRepr( const Mat &patch, int bins )
 {
 	if( patch.data )
 	{ 
-		//Mat hist_c1, hist_c2, hist_c3, featureM;
-		//// Separate the image in 3 places ( B, G and R )
-		//vector<Mat> bgr_planes;
-		//split( patch, bgr_planes );
-		//int histSize = bins;
-		//// Set the ranges ( for B,G,R) )
-		//float range[] = { 0, 256 } ;
-		//const float* histRange = { range };
-		//// Compute the histograms:
-		//calcHist( &bgr_planes[0], 1, 0, Mat(), hist_c1, 1, &histSize, &histRange);
-		//calcHist( &bgr_planes[1], 1, 0, Mat(), hist_c2, 1, &histSize, &histRange);
-		//calcHist( &bgr_planes[2], 1, 0, Mat(), hist_c3, 1, &histSize, &histRange);
-		//// concencate hist
-		//m_featureM.create(histSize * 3, 1, hist_c1.type());
-		//hist_c1.copyTo(m_featureM(Range(0, histSize), Range::all()));
-		//hist_c2.copyTo(m_featureM(Range(histSize, histSize * 2), Range::all()));
-		//hist_c3.copyTo(m_featureM(Range(histSize * 2, histSize * 3), Range::all()));
-		//// normalize here instead
-		//normalize(m_featureM, m_featureM, 1.0, 0, NORM_L1, -1, Mat() );	
-
 		CommonHistograms::getBGRConcatHist(patch, m_featureM, bins, true);
 	}
 	else
@@ -133,6 +113,27 @@ double AffinityCmp::scaleAffinity( const Rect &r1, const Rect &r2 )
 
 //////////////////////////////////////////////////////////////////////////
 
+int CommonHistograms::getSingleChannelHist( const cv::Mat &img, cv::Mat &hist, int channel, int bins,
+										   int maxV /*= 256*/, bool normalized /*= false*/ )
+{
+	if (!img.data || channel >= img.channels()) return 0;
+
+	float range[] = { 0, maxV } ;
+	const float* histRange = { range };
+	int channels[] = { channel };
+
+	// Compute the histograms for the specific channel
+	calcHist( &img, 1, channels, Mat(), hist, 1, &bins, &histRange);
+
+	if (normalized)
+	{
+		normalize(hist, hist, 1.0, 0, NORM_L1, -1, Mat() );	
+	}
+
+	return 1;	
+}
+
+// for now not use getSingleChannelHist as building block
 int CommonHistograms::getBGRConcatHist( const cv::Mat &bgr, cv::Mat &hist, int bins, bool normalized /*= true*/ )
 {
 	if (!bgr.data) return 0;
@@ -151,7 +152,7 @@ int CommonHistograms::getBGRConcatHist( const cv::Mat &bgr, cv::Mat &hist, int b
 	calcHist( &bgr_planes[1], 1, 0, Mat(), hist_c2, 1, &histSize, &histRange);
 	calcHist( &bgr_planes[2], 1, 0, Mat(), hist_c3, 1, &histSize, &histRange);
 
-	// concencate hist
+	// concatenate hist
 	hist.create(histSize * 3, 1, hist_c1.type());
 	hist_c1.copyTo(hist(Range(0, histSize), Range::all()));
 	hist_c2.copyTo(hist(Range(histSize, histSize * 2), Range::all()));
